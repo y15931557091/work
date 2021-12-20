@@ -4,5 +4,3 @@
 编写日期：
 实现逻辑:
 '''
-class lei():
-    def lijie(self):
