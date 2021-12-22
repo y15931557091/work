@@ -17,6 +17,8 @@
 import unittest,requests
 from common.readexcel import ReadExcel
 from ddt import ddt,data,unpack
+from  common.configHttp import ConfigHttp
+from common.writeExcel import WriteExcel
 #获取测试数据，调用readexcel内部的getdata方法
 re = ReadExcel()
 testdata = re.getData()
@@ -29,33 +31,36 @@ class TestCase(unittest.TestCase):
     @unpack
     #提取测试数据内部的method方法
     def test_run(self,id,interfaceUrl,name,method,value,expect,real,status):
-
-
-        method = method
-        #准备请求参数
-        url = interfaceUrl
-        value = eval(value)
-        expect = expect
-        id = id
+    #     method = method
+    #     #准备请求参数
+    #     url = interfaceUrl
+    #     value = value
+    #     expect = expect
+    #     id = id
+        #调用自己写好的ConfigHttp方法进行method判断
+        ch = ConfigHttp(interfaceUrl,value,method)
+        status_code,real_errorcode = ch.run()
         #根据methond进行判断
-        if method == 'get':
-            result = requests.get(url=url,params=value)
-            print('result',result.json())
-        elif method == 'post':
-            result = requests.post(url=url,data=value)
-            print('result',result.json())
+        # if method == 'get':
+        #     result = requests.get(url=url,params=value)
+        #     print('result',result.json())
+        # elif method == 'post':
+        #     result = requests.post(url=url,data=value)
+        #     print('result',result.json())
 
             #从接口请求的结果中，提取需要断言的字段errorCode
-        real = result.json()['errorCode']
+        #real = result.json()['errorCode']
             #将实际提取的errorCode和excel中的预期进行比较
         try:
-            self.assertEqual(str(real),str(expect))
+            self.assertEqual(str(status_code),'200')
+            self.assertEqual(str(real_errorcode),str(expect))
             status = 'success'
         except AssertionError as msg:
             print('系统提示：',msg)
             status = 'fail'
             #将接口断言得到的结果写入excel中
         finally:
-            pass
+            we = WriteExcel()
+            we.writeData(id,6,real_errorcode,status)
 if __name__ == '__main__':
     unittest.main(verbosity=2)
